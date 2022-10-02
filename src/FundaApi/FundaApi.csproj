@@ -7,16 +7,17 @@
     <UserSecretsId>2e9b1821-4c96-422d-9463-a4cb4149cfef</UserSecretsId>
   </PropertyGroup>
 
-
   <ItemGroup>
     <PackageReference Include="Swashbuckle.AspNetCore" Version="6.2.3" />
     <PackageReference Include="Swashbuckle.AspNetCore.Annotations" Version="6.2.3" />
   </ItemGroup>
-
 
   <ItemGroup>
     <ProjectReference Include="..\FundaApi.Core\FundaApi.Core.csproj" />
     <ProjectReference Include="..\FundaApi.LiteDbProvider\FundaApi.LiteDbProvider.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <InternalsVisibleTo Include="$(MSBuildProjectName).Tests" />
+  </ItemGroup>
 </Project>
