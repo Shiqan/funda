@@ -29,23 +29,22 @@ public class BrokerApi : IBrokerApi
 
         var searchQuery = string.IsNullOrEmpty(outdoorspace) ? location : $"{location}/{outdoorspace}";
 
-        var page = 1;
-        while (true)
+        var response = await GetPage(searchQuery, 1, cancellationToken);
+        if (response is null || response.TotaalAantalObjecten == 0)
         {
-            var response = await GetPage(searchQuery, page, cancellationToken);
-            if (response is null || response.TotaalAantalObjecten == 0)
-            {
-                break;
-            }
-            result.AddRange(response.Objects);
-
-            if (response.Paging.HuidigePagina >= response.Paging.AantalPaginas)
-            {
-                break;
-            }
-
-            page++;
+            return Enumerable.Empty<RealEstateAgentWithCount>().ToList();
         }
+
+        result.AddRange(response.Objects);
+
+        _logger.LogDebug("Found {total} and {count} pages to fetch", response.TotaalAantalObjecten, response.Paging.AantalPaginas);
+
+        var requests = Enumerable.Range(2, response.Paging.AantalPaginas - 1)
+            .Select(page => GetPage(searchQuery, page, cancellationToken));
+
+        var responses = await Task.WhenAll(requests);
+        result.AddRange(responses
+            .SelectMany(response => response?.Objects ?? Enumerable.Empty<RealEstateAgent>()));
 
         return result
             .GroupBy(agent => agent)

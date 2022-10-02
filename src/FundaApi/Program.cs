@@ -1,9 +1,8 @@
-﻿using FundaApi.Core.Contracts;
+﻿using FundaApi;
 using FundaApi.Core.Extensions;
-using FundaApi.Core.Models;
 using FundaApi.Core.Options;
-using Microsoft.AspNetCore.Mvc;
-using Swashbuckle.AspNetCore.Annotations;
+using FundaApi.LiteDb.Extensions;
+using FundaApi.LiteDb.Options;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -12,6 +11,7 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 builder.Services.AddFundaApi(builder.Configuration.GetSection(nameof(FundaApiOptions)).Bind);
+builder.Services.UseLiteDb(builder.Configuration.GetSection(nameof(LiteDbOptions)).Bind);
 
 var app = builder.Build();
 
@@ -23,35 +23,6 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
-
-app.MapGet("/agents/{location}/", async (string location, [FromServices] IBrokerApi api, CancellationToken cancellationToken) =>
-{
-    var data = await api.GetRealEstateAgents(location, null, cancellationToken: cancellationToken);
-    if (data is null || !data.Any())
-    {
-        return Results.NotFound();
-    }
-
-    return Results.Ok(data);
-})
-.WithName("GetAgents")
-.WithMetadata(new SwaggerOperationAttribute(summary: "Get the top count Real Estate Agents and the number of listings they have in the specified location."))
-.Produces<IReadOnlyList<RealEstateAgentWithCount>>(200)
-.ProducesProblem(404);
-
-app.MapGet("/agents/{location}/{outdoorspace}", async (string location, string? outdoorspace, [FromServices] IBrokerApi api, CancellationToken cancellationToken) =>
-{
-    var data = await api.GetRealEstateAgents(location, outdoorspace, cancellationToken: cancellationToken);
-    if (data is null || !data.Any())
-    {
-        return Results.NotFound();
-    }
-
-    return Results.Ok(data);
-})
-.WithName("GetAgentsWithOutdoorspace")
-.WithMetadata(new SwaggerOperationAttribute(summary: "Get the top count Real Estate Agents and the number of listings with a certain outdoorspace they have in the specified location."))
-.Produces<IReadOnlyList<RealEstateAgentWithCount>>(200)
-.ProducesProblem(404);
+app.AddEndpoints();
 
 app.Run();
