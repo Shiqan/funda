@@ -13,6 +13,17 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddFundaApi(builder.Configuration.GetSection(nameof(FundaApiOptions)).Bind);
 builder.Services.UseLiteDb(builder.Configuration.GetSection(nameof(LiteDbOptions)).Bind);
 
+builder.Services.AddCors(setup =>
+{
+    setup.AddDefaultPolicy(policy =>
+    {
+        policy
+            .AllowAnyOrigin()
+            .AllowAnyMethod()
+            .AllowAnyHeader();
+    });
+});
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -23,6 +34,8 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+app.UseCors();
+
 app.AddEndpoints();
 
 app.Run();

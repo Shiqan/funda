@@ -1,0 +1,109 @@
+﻿@page "/"
+@page "/{location}"
+@page "/{location}/{outdoorspace}"
+@inject IFundaApiClient _client
+@inject NavigationManager _navigationManager
+
+<PageTitle>Index</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="mt-16">
+    <ErrorBoundary>
+        <ChildContent>
+            @if (failed)
+            {
+                <MudPaper Class="d-flex align-center justify-center mud-width-full py-8" Elevation="0">
+                    <MudAlert Severity="Severity.Error">Something went wrong retrieving data from '@filter.Location'</MudAlert>
+                </MudPaper>
+            }
+
+            <FilterMenu @bind-Filter="filter" OnFilterChanged="OnQuerySubmit" />
+
+            <MudGrid>
+                <MudItem xs="12">
+                    <MudTable ServerData="@(new Func<TableState, Task<TableData<RealEstateAgentWithCount>>>(ServerReload))"
+                              Hover="true" Striped="true" Dense="true" SortLabel="Sort By" Elevation="0" @ref="table" T="RealEstateAgentWithCount">
+                        <HeaderContent>
+                            <MudTh><MudTableSortLabel SortLabel="name" T="RealEstateAgentWithCount">Name</MudTableSortLabel></MudTh>
+                            <MudTh><MudTableSortLabel SortLabel="count" T="RealEstateAgentWithCount">Count</MudTableSortLabel></MudTh>
+                        </HeaderContent>
+                        <RowTemplate>
+                            <MudTd DataLabel="Item Id">@context.Name</MudTd>
+                            <MudTd DataLabel="Title">@context.Count</MudTd>
+                        </RowTemplate>
+                        <PagerContent>
+                            <MudTablePager PageSizeOptions="new int[] { 10, 20, 50, 100 }" />
+                        </PagerContent>
+                    </MudTable>
+                </MudItem>
+            </MudGrid>
+        </ChildContent>
+        <ErrorContent>
+            <MudPaper Class="d-flex align-center justify-center mud-width-full py-8" Elevation="0">
+                <MudAlert Severity="Severity.Error">Meltdown is imminent</MudAlert>
+            </MudPaper>
+        </ErrorContent>
+    </ErrorBoundary>
+</MudContainer>
+
+@code {
+    [Parameter]
+    public string? Location { get; set; }
+
+    [Parameter]
+    public string? Outdoorspace { get; set; }
+
+    private bool failed { get; set; } = false;
+
+    private Filter filter { get; set; } = new Filter();
+
+    private MudTable<RealEstateAgentWithCount> table;
+
+    protected override void OnInitialized()
+    {
+        base.OnInitialized();
+        filter.Location ??= Location;
+        filter.Outdoorspace ??= Outdoorspace;
+    }
+
+    private async Task<TableData<RealEstateAgentWithCount>> ServerReload(TableState state)
+    {
+        var result = Enumerable.Empty<RealEstateAgentWithCount>();
+
+        try
+        {
+            failed = false;
+            if (!string.IsNullOrEmpty(filter.Location))
+            {
+                if (!string.IsNullOrEmpty(filter.Outdoorspace))
+                {
+                    result = await _client.GetAgentsWithOutdoorspaceAsync(filter.Location, filter.Outdoorspace, state.PageSize);
+                    _navigationManager.NavigateTo($"{filter.Location}/{filter.Outdoorspace}", forceLoad: false, replace: true);
+                }
+                else
+                {
+                    result = await _client.GetAgentsAsync(filter.Location, state.PageSize);
+                    _navigationManager.NavigateTo(filter.Location, forceLoad: false, replace: true);
+                }
+            }
+
+            await InvokeAsync(StateHasChanged);
+
+        }
+        catch (ApiException ex)
+        {
+            failed = true;
+        }
+
+
+        return new TableData<RealEstateAgentWithCount>()
+            {
+                TotalItems = result.Count(),
+                Items = result
+            };
+    }
+
+    private async Task OnQuerySubmit()
+    {
+        await table.ReloadServerData();
+    }
+}

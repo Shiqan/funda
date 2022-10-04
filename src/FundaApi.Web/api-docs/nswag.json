@@ -1,0 +1,23 @@
+﻿{
+  "runtime": "net60",
+  "documentGenerator": {
+    "fromDocument": {
+      "json": "./api-docs/openapi.json"
+    }
+  },
+  "codeGenerators": {
+    "openApiToCSharpClient": {
+      "namespace": "$(SdkNamespace)",
+      "className": "$(SdkClassName)",
+      "generateClientInterfaces": true,
+      "useBaseUrl": false,
+      "generateBaseUrlProperty": false,
+      "generateOptionalParameters": true,
+      "parameterArrayType": "System.Collections.Generic.IEnumerable",
+      "responseArrayType": "System.Collections.Generic.IEnumerable",
+      "generateOptionalPropertiesAsNullable": true,
+      "generateNullableReferenceTypes": true,
+      "output": "$(GeneratedClientFile)"
+    }
+  }
+}

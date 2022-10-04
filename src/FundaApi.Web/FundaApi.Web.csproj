@@ -1,0 +1,46 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.BlazorWebAssembly">
+
+  <PropertyGroup>
+    <TargetFramework>net6.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="MudBlazor" Version="6.0.16" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
+    <PackageReference Include="NSwag.MSBuild" Version="13.17.0">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="System.ComponentModel.Annotations" Version="5.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="6.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="6.0.0" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="6.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Http" Version="6.0.0" />
+    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="6.0.9" />
+    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="6.0.9" PrivateAssets="all" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="api-docs\nswag.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="api-docs\openapi.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
+  <Target Name="GenerateSdk" BeforeTargets="Build">
+    <PropertyGroup>
+      <NSwagConfiguration>/api-docs/nswag.json</NSwagConfiguration>
+
+      <SdkNamespace>$(RootNamespace)</SdkNamespace>
+      <SdkClassName>FundaApiClient</SdkClassName>
+      <GeneratedServiceFile>./../$(SdkClassName).g.cs</GeneratedServiceFile>
+    </PropertyGroup>
+
+    <Exec Command="$(NSwagExe_Net60) run .\api-docs\nswag.json /variables:SdkClassName=$(SdkClassName),SdkNamespace=$(SdkNamespace),GeneratedClientFile=$(GeneratedServiceFile)" Condition="!Exists('$(SdkClassName).g.cs')" />
+  </Target>
+
+</Project>

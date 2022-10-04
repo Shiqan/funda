@@ -1,0 +1,15 @@
+# tye application configuration file
+# read all about it at https://github.com/dotnet/tye
+
+name: funda
+services:
+- name: blazor
+  project: src\FundaApi.Web\FundaApi.Web.csproj
+  bindings:
+  - port: 5000
+    protocol: https
+- name: api
+  project: src\FundaApi\FundaApi.csproj
+  bindings:
+  - port: 5001
+    protocol: https

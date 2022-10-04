@@ -1,0 +1,31 @@
+﻿@inherits LayoutComponentBase
+
+<MudGrid>
+    <MudItem xs="12" sm="8">
+        <MudTextField @bind-Value="Filter.Location" Label="Search" Variant="Variant.Outlined" Adornment="Adornment.End" AdornmentIcon="@Icons.Filled.Search" AdornmentColor="Color.Secondary" TextChanged="OnChange" Clearable/>
+    </MudItem>
+
+    <MudItem xs="12" sm="4">
+        <MudSelect T="string" @bind-Value="Filter.Outdoorspace" Label="Outdoorspace" OffsetY="true" Variant="Variant.Outlined" SelectedValuesChanged="OnChange" Clearable>
+            <MudSelectItem Value="@("Tuin")" />
+            <MudSelectItem Value="@("Balkon")" />
+            <MudSelectItem Value="@("Dakterras")" />
+        </MudSelect>
+    </MudItem>
+</MudGrid>
+
+@code {
+    [Parameter]
+    public Filter Filter { get; set; }
+
+    [Parameter]
+    public EventCallback<Filter> FilterChanged { get; set; }
+
+    [Parameter]
+    public EventCallback OnFilterChanged { get; set; }
+
+    private async Task OnChange()
+    {
+        await OnFilterChanged.InvokeAsync();
+    }
+}
